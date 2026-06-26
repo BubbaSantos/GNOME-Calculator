@@ -16,6 +16,7 @@ template $HistoryEntry: ListBoxRow {
       wrap-mode: word_char;
 
       GestureClick {
+        button: 0;
         pressed => $equation_clicked_cb();
       }
 
@@ -54,6 +55,7 @@ template $HistoryEntry: ListBoxRow {
       max-width-chars: 12;
 
       GestureClick {
+        button: 0;
         pressed => $answer_clicked_cb();
       }
 

@@ -118,6 +118,7 @@ template $MathWindow: Adw.ApplicationWindow {
   title: _("Calculator");
   height-request: 616;
 
+  Adw.ToastOverlay toast_overlay {
   Adw.ToolbarView {
     top-bar-style: raised;
 
@@ -206,5 +207,6 @@ template $MathWindow: Adw.ApplicationWindow {
         }
       }
     };
+  }
   }
 }

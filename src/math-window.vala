@@ -19,6 +19,8 @@ public class MathWindow : Adw.ApplicationWindow
     private string saved_eq = null;
 
     [GtkChild]
+    private unowned Adw.ToastOverlay toast_overlay;
+    [GtkChild]
     private unowned HistoryView history;
     [GtkChild]
     private unowned MathDisplay _display;
@@ -108,6 +110,9 @@ public class MathWindow : Adw.ApplicationWindow
         history.answer_clicked.connect (_display.insert_text);
         history.equation_clicked.connect (_display.display_text);
         history.row_added.connect (this.eq_changed_cb);
+        history.answer_copied.connect (() => {
+            toast_overlay.add_toast (new Adw.Toast (_("Copied to clipboard")));
+        });
         history.set_serializer (_display.equation.serializer);
 
         _display.arr_key_pressed.connect (this.arr_key_pressed_cb);

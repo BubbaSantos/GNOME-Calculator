@@ -23,6 +23,7 @@ public class HistoryView : Adw.Bin
     public int current { get { return _current; } set { _current = value.clamp (0, _rows); } }
     public signal void answer_clicked (string ans);
     public signal void equation_clicked (string equation);
+    public signal void answer_copied ();
     public signal void row_added ();
 
     public HistoryEntry? get_entry_at (int index)
@@ -49,6 +50,7 @@ public class HistoryView : Adw.Bin
 
         entry.answer_clicked.connect ((ans) => { this.answer_clicked (ans); });
         entry.equation_clicked.connect ((eq) => { this.equation_clicked (eq); });
+        entry.answer_copied.connect (() => { this.answer_copied (); });
 
         last_equation = equation;
         _rows++;
@@ -104,6 +106,7 @@ public class HistoryEntry : Gtk.ListBoxRow
 
     public signal void answer_clicked (string ans);
     public signal void equation_clicked (string equation);
+    public signal void answer_copied ();
 
     public HistoryEntry (string equation, Number answer, Serializer serializer)
     {
@@ -144,13 +147,33 @@ public class HistoryEntry : Gtk.ListBoxRow
     public void answer_clicked_cb (Gtk.GestureClick gesture, int n_press, double x, double y)
     {
         var answer = answer_label.get_text ();
-        if (answer != null)
+        if (answer == null)
+            return;
+
+        uint button = gesture.get_current_button ();
+        
+        if (button == 3) {
+            var clipboard = Gdk.Display.get_default ().get_clipboard ();
+            clipboard.set_text (answer);
+            answer_copied ();
+        } else if (button == 1) {
             answer_clicked (answer);
+        }
     }
 
     [GtkCallback]
     private void equation_clicked_cb (Gtk.GestureClick gesture, int n_press, double x, double y)
     {
+        uint button = gesture.get_current_button ();
+        if (button == 3) {
+            var answer = answer_label.get_text ();
+            if (answer != null) {
+                var clipboard = Gdk.Display.get_default ().get_clipboard ();
+                clipboard.set_text (answer);
+                answer_copied ();
+            }
+            return;
+        }
         var equation = equation_label.get_text ();
         if (equation != null)
             equation_clicked (equation);
