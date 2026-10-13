@@ -422,5 +422,9 @@ public class MathWindow : Adw.ApplicationWindow
             pair.get ("(ss)", out eq, out ans);
             history.load_entry (eq, ans);
         }
+
+        /* Rows were added before the list was laid out, so the scroll done
+         * per row used a stale size. Scroll again once layout has settled. */
+        Idle.add (() => { history.scroll_bottom (); return Source.REMOVE; });
     }
 }
