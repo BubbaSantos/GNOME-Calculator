@@ -16,6 +16,9 @@ public class HistoryView : Adw.Bin
     [GtkChild]
     unowned Gtk.ListBox listbox;
 
+    [GtkChild]
+    unowned Gtk.ScrolledWindow scrolled_window;
+
     private Serializer serializer;
     private int _rows = 0;
     private int _current = 0;
@@ -36,12 +39,28 @@ public class HistoryView : Adw.Bin
     [GtkCallback]
     public void scroll_bottom ()
     {
-        var adjustment = listbox.get_adjustment ();
-        // TODO make this dynamic, do not hardcode listbox_height_request/number_of_rows
-        int width, height;
-        get_size_request (out width, out height);
-        adjustment.page_size = height / 3;
+        var adjustment = scrolled_window.vadjustment;
         adjustment.set_value (adjustment.get_upper () - adjustment.get_page_size ());
+    }
+
+    /* Keep the view pinned to the newest entry while the restored rows are
+     * still being measured, then stop so manual scrolling is not fought.
+     * The scroll is deferred to an idle callback: setting the value from
+     * inside the size allocation that changed "upper" updates the adjustment
+     * but the viewport does not move. */
+    public void scroll_bottom_after_layout ()
+    {
+        var adj = scrolled_window.vadjustment;
+        ulong id = adj.notify["upper"].connect (() => {
+            Idle.add (() => {
+                adj.value = adj.upper - adj.page_size;
+                return Source.REMOVE;
+            });
+        });
+        Timeout.add (500, () => {
+            adj.disconnect (id);
+            return Source.REMOVE;
+        });
     }
 
     private void append_entry (HistoryEntry entry, string equation)

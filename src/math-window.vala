@@ -424,7 +424,7 @@ public class MathWindow : Adw.ApplicationWindow
         }
 
         /* Rows were added before the list was laid out, so the scroll done
-         * per row used a stale size. Scroll again once layout has settled. */
-        Idle.add (() => { history.scroll_bottom (); return Source.REMOVE; });
+         * per row used a stale size. Keep scrolling to the end until layout has settled. */
+        history.scroll_bottom_after_layout ();
     }
 }
